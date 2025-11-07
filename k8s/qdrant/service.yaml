@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+	name: qdrant
+	namespace: ragaas
+	labels:
+		app: qdrant
+spec:
+	ports:
+		- port: 6333
+			targetPort: 6333
+			protocol: TCP
+			name: http
+	selector:
+		app: qdrant

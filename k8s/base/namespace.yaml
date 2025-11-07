@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+	name: ragaas
+	labels:
+		name: ragaas
+
+---
+# Optional monitoring namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+	name: monitoring
+	labels:
+		name: monitoring

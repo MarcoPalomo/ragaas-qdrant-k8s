@@ -1,0 +1,24 @@
+---
+# Global configmap for application-level default settings. Override with env-specific configmaps if needed.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+	name: ragaas-config
+	namespace: ragaas
+data:
+	# Example: tuning values used by rag-service
+	LOG_LEVEL: "INFO"
+	DEFAULT_COLLECTION: "default"
+	QDRANT_URL: "http://qdrant:6333"
+	REDIS_URL: "redis://redis:6379"
+
+---
+# Prometheus additional scrape configs can be mounted via a ConfigMap when not using Helm chart values.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+	name: prometheus-additional-scrape-configs
+	namespace: monitoring
+data:
+	README: |
+		Place additional prometheus scrape configs here if you need to extend scraping outside of the chart values.

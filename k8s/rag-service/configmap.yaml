@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+	name: rag-service-config
+	namespace: ragaas
+data:
+	# Application specific settings. Use secrets for credentials.
+	LOG_LEVEL: "INFO"
+	DEFAULT_COLLECTION: "default"
