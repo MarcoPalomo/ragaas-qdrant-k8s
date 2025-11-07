@@ -1,0 +1,22 @@
+(# Minimal values for RabbitMQ chart
+# Use these defaults for simple development installs. For production, enable persistence and tune resources.
+
+image:
+	repository: rabbitmq
+	tag: "3.11-management"
+
+replicaCount: 1
+
+service:
+	type: ClusterIP
+	port: 5672
+
+persistence:
+	enabled: false
+	size: 8Gi
+	storageClass: ""
+
+resources: {}
+
+# End of rabbitmq values
+

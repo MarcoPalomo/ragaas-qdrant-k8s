@@ -1,0 +1,16 @@
+groups:
+  - name: rag-metrics
+    rules:
+      - alert: HighRequestLatency
+        expr: http_request_duration_seconds_bucket{job="rag-service"} > 1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Temps de réponse élevé du RAG Service"
+          description: "Le service RAG dépasse 1s de latence sur les requêtes HTTP."
+
+      - record: job:http_request_rate5m
+        expr: sum(rate(http_requests_total[5m])) by (job)
+      - record: job:http_error_rate5m
+        expr: sum(rate(http_errors_total[5m])) by (job)

@@ -1,0 +1,40 @@
+(# Default values for the rag-service chart
+# Customize image.tag and environment secrets per-environment in helmfile/values/
+
+image:
+	repository: yourorg/rag-service
+	tag: latest
+
+replicaCount: 2
+
+service:
+	type: ClusterIP
+	port: 8000
+
+env:
+	# Placeholders — override securely in helmfile/values/<env>/values.yaml
+	OPENAI_API_KEY: ""
+	QDRANT_URL: "http://qdrant:6333"
+	REDIS_URL: "redis://redis:6379"
+
+resources:
+	requests:
+		cpu: 100m
+		memory: 128Mi
+	limits:
+		cpu: 500m
+		memory: 512Mi
+
+# Health / readiness probe configuration (used by templates)
+probes:
+	liveness:
+		path: /health
+		initialDelaySeconds: 30
+		periodSeconds: 10
+	readiness:
+		path: /ready
+		initialDelaySeconds: 10
+		periodSeconds: 5
+
+# End of rag-service values
+

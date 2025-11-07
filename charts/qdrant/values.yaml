@@ -1,0 +1,22 @@
+(# Minimal values for Qdrant chart
+# Tune image, persistence and resources for your environment.
+
+image:
+	repository: qdrant/qdrant
+	tag: "latest"
+
+replicaCount: 1
+
+service:
+	type: ClusterIP
+	port: 6333
+
+persistence:
+	enabled: true
+	size: 10Gi
+	storageClass: "" # set to storage class name, or leave empty to use default
+
+resources: {}
+
+# End of qdrant values
+

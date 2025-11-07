@@ -1,0 +1,22 @@
+apiVersion: v2
+name: rabbitmq
+description: RabbitMQ message broker for async document ingestion in RAG service
+type: application
+version: 1.0.0
+appVersion: "3.13.0"
+
+keywords:
+  - rabbitmq
+  - message-queue
+  - amqp
+  - messaging
+
+maintainers:
+  - name: Platform Team
+    email: platform@cnaas.link
+
+dependencies: []
+
+annotations:
+  category: Infrastructure
+  licenses: MPL-2.0

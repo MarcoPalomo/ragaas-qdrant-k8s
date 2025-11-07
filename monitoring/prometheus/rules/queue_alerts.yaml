@@ -1,0 +1,19 @@
+groups:
+  - name: rabbitmq-alerts
+    rules:
+      - alert: RabbitMQQueueGrowing
+        expr: rabbitmq_queue_messages_ready{queue=~".+"} > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Backlog élevé dans RabbitMQ"
+          description: "Plus de 1000 messages en attente dans {{ $labels.queue }}"
+      - alert: RabbitMQNodeDown
+        expr: rabbitmq_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Nœud RabbitMQ {{ $labels.instance }} est down"
+          description: "Le nœud RabbitMQ {{ $labels.instance }} ne répond plus."

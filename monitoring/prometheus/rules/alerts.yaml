@@ -1,0 +1,19 @@
+groups:
+  - name: system-alerts
+    rules:
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance {{ $labels.instance }} est down"
+          description: "Le job {{ $labels.job }} ne répond plus."
+      - alert: HighMemoryUsage
+        expr: node_memory_Active_bytes / node_memory_MemTotal_bytes > 0.8
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Utilisation élevée de la mémoire sur {{ $labels.instance }}"
+          description: "L'utilisation de la mémoire dépasse 80% sur {{ $labels.instance }}."

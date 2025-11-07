@@ -1,0 +1,21 @@
+apiVersion: v2
+name: redis
+description: Redis cache for RAG service - embeddings and response caching
+type: application
+version: 1.0.0
+appVersion: "7.2.4"
+
+keywords:
+  - redis
+  - cache
+  - key-value
+
+maintainers:
+  - name: Platform Team
+    email: platform@cnaas.link
+
+dependencies: []
+
+annotations:
+  category: Database
+  licenses: BSD-3-Clause

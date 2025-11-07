@@ -1,0 +1,98 @@
+# Certificate resources for cert-manager
+# Make sure cert-manager is installed in your cluster
+
+---
+# ClusterIssuer for Let's Encrypt Production
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    # Production Let's Encrypt server
+    server: https://acme-v02.api.letsencrypt.org/directory
+    
+    # Email for certificate expiration notifications
+    email: admin@cnaas.link  # Change this!
+    
+    # Store the ACME account private key in this secret
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    
+    # Enable HTTP-01 challenge provider
+    solvers:
+      - http01:
+          ingress:
+            class: nginx
+
+---
+# ClusterIssuer for Let's Encrypt Staging (for testing)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    # Staging Let's Encrypt server (higher rate limits, but not trusted)
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    
+    email: admin@cnaas.link  # Change this!
+    
+    privateKeySecretRef:
+      name: letsencrypt-staging
+    
+    solvers:
+      - http01:
+          ingress:
+            class: nginx
+
+---
+# Certificate for RAG API
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: rag-api-cert
+  namespace: rag-system
+spec:
+  secretName: rag-api-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - rag-api.cnaas.link
+  duration: 2160h  # 90 days
+  renewBefore: 360h  # 15 days before expiration
+
+---
+# Certificate for RabbitMQ Management
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: rabbitmq-cert
+  namespace: rag-system
+spec:
+  secretName: rabbitmq-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - rabbitmq.cnaas.link
+  duration: 2160h
+  renewBefore: 360h
+
+---
+# Certificate for Qdrant Dashboard
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: qdrant-cert
+  namespace: rag-system
+spec:
+  secretName: qdrant-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - qdrant.cnaas.link
+  duration: 2160h
+  renewBefore: 360h

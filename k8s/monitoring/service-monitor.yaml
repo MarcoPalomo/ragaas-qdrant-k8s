@@ -1,0 +1,94 @@
+# ServiceMonitor resources for Prometheus Operator
+# These define how Prometheus should scrape metrics from services
+
+---
+# ServiceMonitor for RAG Service
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: rag-service-metrics
+  namespace: rag-system
+  labels:
+    app: rag-service
+    prometheus: rag-system
+spec:
+  selector:
+    matchLabels:
+      app: rag-service
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+      - rag-system
+
+---
+# ServiceMonitor for Redis
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: redis-metrics
+  namespace: rag-system
+  labels:
+    app: redis
+    prometheus: rag-system
+spec:
+  selector:
+    matchLabels:
+      app: redis
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+      - rag-system
+
+---
+# ServiceMonitor for RabbitMQ
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: rabbitmq-metrics
+  namespace: rag-system
+  labels:
+    app: rabbitmq
+    prometheus: rag-system
+spec:
+  selector:
+    matchLabels:
+      app: rabbitmq
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+      - rag-system
+
+---
+# ServiceMonitor for Qdrant
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: qdrant-metrics
+  namespace: rag-system
+  labels:
+    app: qdrant
+    prometheus: rag-system
+spec:
+  selector:
+    matchLabels:
+      app: qdrant
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+      - rag-system

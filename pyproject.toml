@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ragaas-k8s"
+version = "0.1.0"
+description = "RAGaaS — Retrieval Augmented Generation as a Service"
+authors = [ { name = "MarcoPalomo" } ]
+requires-python = ">=3.10"
+
+[tool]
+# Add tooling configurations (flake8, isort, black) here as needed.

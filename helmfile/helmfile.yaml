@@ -1,0 +1,140 @@
+# Helmfile for RAG as a Service
+# Deploy with: helmfile -e <environment> apply
+
+helmDefaults:
+  createNamespace: true
+  wait: true
+  timeout: 600
+  force: false
+  atomic: true
+  cleanupOnFail: true
+
+# Repositories
+repositories:
+  - name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
+  - name: grafana
+    url: https://grafana.github.io/helm-charts
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami
+
+# Environment configuration
+environments:
+  dev:
+    values:
+      - values/dev/common.yaml
+  staging:
+    values:
+      - values/staging/common.yaml
+  production:
+    values:
+      - values/production/common.yaml
+
+---
+
+# Releases
+releases:
+  # 1. Infrastructure Layer - Redis
+  - name: redis
+    namespace: rag-system
+    chart: ../charts/redis
+    version: 1.0.0
+    values:
+      - values/{{ .Environment.Name }}/redis.yaml
+    labels:
+      layer: infrastructure
+      component: cache
+    needs: []
+  
+  # 2. Infrastructure Layer - RabbitMQ
+  - name: rabbitmq
+    namespace: rag-system
+    chart: ../charts/rabbitmq
+    version: 1.0.0
+    values:
+      - values/{{ .Environment.Name }}/rabbitmq.yaml
+    labels:
+      layer: infrastructure
+      component: queue
+    needs: []
+  
+  # 3. Data Layer - Qdrant
+  - name: qdrant
+    namespace: rag-system
+    chart: ../charts/qdrant
+    version: 1.0.0
+    values:
+      - values/{{ .Environment.Name }}/qdrant.yaml
+    labels:
+      layer: data
+      component: vector-db
+    needs: []
+  
+  # 4. Monitoring Stack
+  - name: monitoring
+    namespace: monitoring
+    chart: ../charts/monitoring
+    version: 1.0.0
+    values:
+      - values/{{ .Environment.Name }}/monitoring.yaml
+    labels:
+      layer: observability
+      component: monitoring
+    needs: []
+  
+  # 5. Application Layer - RAG Service
+  - name: rag-service
+    namespace: rag-system
+    chart: ../charts/rag-service
+    version: 1.0.0
+    values:
+      - values/{{ .Environment.Name }}/rag-service.yaml
+    labels:
+      layer: application
+      component: api
+    needs:
+      - redis
+      - rabbitmq
+      - qdrant
+  
+  # 6. Worker Layer - Document Ingestor Worker
+  - name: document-ingestor
+    namespace: rag-system
+    chart: ../charts/document-ingestor
+    version: 1.0.0
+    values:
+      - values/{{ .Environment.Name }}/document-ingestor.yaml
+    labels:
+      layer: application
+      component: worker
+    needs:
+      - redis
+      - rabbitmq
+      - qdrant
+
+---
+
+# Hooks for pre/post deployment
+hooks:
+  - events: ["presync"]
+    showlogs: true
+    command: "bash"
+    args:
+      - "-c"
+      - |
+        echo "Starting deployment to {{ .Environment.Name }}"
+        echo "Checking cluster connectivity..."
+        kubectl cluster-info
+  
+  - events: ["postsync"]
+    showlogs: true
+    command: "bash"
+    args:
+      - "-c"
+      - |
+        echo "Deployment completed!"
+        echo "Checking pods status..."
+        kubectl get pods -n rag-system
+        echo ""
+        echo "Services:"
+        kubectl get svc -n rag-system

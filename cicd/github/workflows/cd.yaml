@@ -85,7 +85,7 @@ jobs:
     
     environment:
       name: production
-      url: https://ragaas.example.com  # Replace with your actual domain
+      url: https://ragaas.cnaas.link  # Replace with your actual domain
     
     steps:
       - uses: actions/checkout@v4
@@ -148,7 +148,7 @@ jobs:
       
       - name: Run smoke tests
         env:
-          API_URL: https://ragaas.example.com  # Replace with your actual domain
+          API_URL: https://ragaas.cnaas.link  # Replace with your actual domain
         run: |
           # Add your smoke tests here
           curl -f ${API_URL}/health

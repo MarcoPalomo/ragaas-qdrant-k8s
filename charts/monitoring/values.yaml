@@ -1,0 +1,26 @@
+(# Default values for the monitoring umbrella chart
+# These are opinionated defaults. Adjust per-environment in helmfile/values/<env>/ or via `--set` when installing.)
+
+prometheus:
+	enabled: true
+	service:
+		type: ClusterIP
+	prometheusSpec: {}
+
+grafana:
+	enabled: true
+	adminUser: admin
+	adminPassword: changeme
+	service:
+		type: ClusterIP
+
+loki:
+	enabled: true
+	service:
+		type: ClusterIP
+
+# Global resource defaults (override per-subchart if needed)
+resources: {}
+
+# End of monitoring values
+

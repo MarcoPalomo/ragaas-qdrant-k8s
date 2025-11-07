@@ -1,0 +1,14 @@
+environments:
+  dev:
+    values:
+      - helmfile/values/dev/values.yaml
+
+  staging:
+    values:
+      - helmfile/values/staging/values.yaml
+
+  production:
+    values:
+      - helmfile/values/production/values.yaml
+
+# Use `helmfile -e dev apply` to deploy the dev environment, for example.

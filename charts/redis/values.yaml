@@ -1,0 +1,23 @@
+(# Minimal values for Redis chart
+# Override persistence and replica settings per environment.
+
+image:
+	repository: bitnami/redis
+	tag: "7"
+
+replicaCount: 1
+
+master:
+	persistence:
+		enabled: false
+		size: 4Gi
+		storageClass: ""
+
+service:
+	type: ClusterIP
+	port: 6379
+
+resources: {}
+
+# End of redis values
+
