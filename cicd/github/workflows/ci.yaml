@@ -1,0 +1,197 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+
+env:
+  PYTHON_VERSION: "3.11"
+  REGISTRY: ghcr.io
+  PYTEST_ADDOPTS: "-v --color=yes"
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: |
+            **/requirements.txt
+            **/setup.py
+            **/pyproject.toml
+      
+      - name: Install lint dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black isort mypy
+
+      - name: Check formatting (black)
+        run: |
+          black --check src/
+
+      - name: Check imports (isort)
+        run: |
+          isort --check-only src/
+
+      - name: Lint with flake8
+        run: |
+          flake8 src/ --count --show-source --statistics
+
+      - name: Type check with mypy
+        run: |
+          mypy src/
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: lint
+    
+    services:
+      qdrant:
+        image: qdrant/qdrant:latest
+        ports:
+          - 6333:6333
+          - 6334:6334
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: |
+            **/requirements.txt
+            **/setup.py
+            **/pyproject.toml
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-asyncio pytest-cov
+          pip install -r src/rag-service/requirements.txt
+          pip install -r src/document-ingestor/requirements.txt
+          pip install -r src/batch-processing/requirements.txt
+
+      - name: Run tests
+        env:
+          QDRANT_HOST: http://localhost:6333
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          pytest src/rag-service/tests/ --cov=src/rag-service/app --cov-report=xml
+          pytest src/document-ingestor/tests/ --cov=src/document-ingestor/app --cov-append --cov-report=xml
+          pytest src/batch-processing/tests/ --cov=src/batch-processing/app --cov-append --cov-report=xml
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+
+  security:
+    name: Security Check
+    runs-on: ubuntu-latest
+    needs: lint
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit safety
+
+      - name: Run bandit
+        run: |
+          bandit -r src/ -ll
+
+      - name: Check dependencies
+        run: |
+          safety check -r src/rag-service/requirements.txt
+          safety check -r src/document-ingestor/requirements.txt
+          safety check -r src/batch-processing/requirements.txt
+
+  build:
+    name: Build Images
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    if: github.event_name == 'push'
+    
+    permissions:
+      contents: read
+      packages: write
+    
+    strategy:
+      matrix:
+        service: [rag-service, document-ingestor, batch-processing]
+        include:
+          - service: rag-service
+            dockerfile: cicd/Dockerfile.rag-service
+            context: ./src/rag-service
+          - service: document-ingestor
+            dockerfile: cicd/Dockerfile.ingestor
+            context: ./src/document-ingestor
+          - service: batch-processing
+            dockerfile: src/batch-processing/Dockerfile
+            context: ./src/batch-processing
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=long
+      
+      - name: Build image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: false  # Don't push on CI, only on CD
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
