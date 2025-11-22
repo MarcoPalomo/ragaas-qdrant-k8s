@@ -1,0 +1,72 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ragaas-ingress
+  namespace: ragaas
+  labels:
+    app.kubernetes.io/name: ragaas-ingress
+    app.kubernetes.io/part-of: ragaas-platform
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - rag-api.cnaas.link
+      secretName: rag-api-tls
+    - hosts:
+        - rabbitmq.cnaas.link
+      secretName: rabbitmq-tls
+    - hosts:
+        - qdrant.cnaas.link
+      secretName: qdrant-tls
+    - hosts:
+        - minio.cnaas.link
+      secretName: minio-tls
+  rules:
+    - host: rag-api.cnaas.link
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rag-service
+                port:
+                  name: http
+    - host: rabbitmq.cnaas.link
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rabbitmq
+                port:
+                  name: management
+    - host: qdrant.cnaas.link
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: qdrant
+                port:
+                  name: http
+    - host: minio.cnaas.link
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: minio
+                port:
+                  name: console

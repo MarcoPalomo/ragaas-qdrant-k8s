@@ -1,12 +1,15 @@
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-	name: qdrant-pvc
-	namespace: ragaas
+  name: qdrant-pvc
+  namespace: ragaas
+  labels:
+    app.kubernetes.io/name: qdrant
+    app.kubernetes.io/part-of: ragaas-platform
 spec:
-	accessModes:
-		- ReadWriteOnce
-	resources:
-		requests:
-			storage: 10Gi
-	storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

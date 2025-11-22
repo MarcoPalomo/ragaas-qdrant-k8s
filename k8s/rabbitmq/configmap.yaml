@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-config
+  namespace: ragaas
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    app.kubernetes.io/part-of: ragaas-platform
+data:
+  10-defaults.conf: |
+    # Default configuration
+    default_vhost = /
+    default_permissions.configure = .*
+    default_permissions.read = .*
+    default_permissions.write = .*
+
+    # Logging
+    log.console = true
+    log.console.level = info
+
+    # Memory management
+    vm_memory_high_watermark.relative = 0.7
+    vm_memory_high_watermark_paging_ratio = 0.8
+
+    # Disk management
+    disk_free_limit.absolute = 1GB
+
+    # Enable prometheus metrics
+    prometheus.return_per_object_metrics = true

@@ -1,15 +1,16 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-	name: ragaas
-	labels:
-		name: ragaas
-
 ---
-# Optional monitoring namespace
 apiVersion: v1
 kind: Namespace
 metadata:
-	name: monitoring
-	labels:
-		name: monitoring
+  name: ragaas
+  labels:
+    app.kubernetes.io/name: ragaas
+    app.kubernetes.io/part-of: ragaas-platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    app.kubernetes.io/name: monitoring
+    app.kubernetes.io/part-of: ragaas-platform

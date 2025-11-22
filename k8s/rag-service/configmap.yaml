@@ -1,9 +1,14 @@
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-	name: rag-service-config
-	namespace: ragaas
+  name: rag-service-config
+  namespace: ragaas
+  labels:
+    app.kubernetes.io/name: rag-service
+    app.kubernetes.io/part-of: ragaas-platform
 data:
-	# Application specific settings. Use secrets for credentials.
-	LOG_LEVEL: "INFO"
-	DEFAULT_COLLECTION: "default"
+  LOG_LEVEL: "INFO"
+  DEFAULT_COLLECTION: "default"
+  MAX_CONCURRENT_REQUESTS: "100"
+  REQUEST_TIMEOUT: "30"

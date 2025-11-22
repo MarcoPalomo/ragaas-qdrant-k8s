@@ -1,20 +1,18 @@
-# ServiceMonitor resources for Prometheus Operator
-# These define how Prometheus should scrape metrics from services
-
 ---
 # ServiceMonitor for RAG Service
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: rag-service-metrics
-  namespace: rag-system
+  namespace: monitoring
   labels:
-    app: rag-service
-    prometheus: rag-system
+    app.kubernetes.io/name: rag-service
+    app.kubernetes.io/part-of: ragaas-platform
+    release: prometheus
 spec:
   selector:
     matchLabels:
-      app: rag-service
+      app.kubernetes.io/name: rag-service
   endpoints:
     - port: http
       path: /metrics
@@ -22,22 +20,22 @@ spec:
       scrapeTimeout: 10s
   namespaceSelector:
     matchNames:
-      - rag-system
-
+      - ragaas
 ---
 # ServiceMonitor for Redis
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: redis-metrics
-  namespace: rag-system
+  namespace: monitoring
   labels:
-    app: redis
-    prometheus: rag-system
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/part-of: ragaas-platform
+    release: prometheus
 spec:
   selector:
     matchLabels:
-      app: redis
+      app.kubernetes.io/name: redis
   endpoints:
     - port: metrics
       path: /metrics
@@ -45,22 +43,22 @@ spec:
       scrapeTimeout: 10s
   namespaceSelector:
     matchNames:
-      - rag-system
-
+      - ragaas
 ---
 # ServiceMonitor for RabbitMQ
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: rabbitmq-metrics
-  namespace: rag-system
+  namespace: monitoring
   labels:
-    app: rabbitmq
-    prometheus: rag-system
+    app.kubernetes.io/name: rabbitmq
+    app.kubernetes.io/part-of: ragaas-platform
+    release: prometheus
 spec:
   selector:
     matchLabels:
-      app: rabbitmq
+      app.kubernetes.io/name: rabbitmq
   endpoints:
     - port: metrics
       path: /metrics
@@ -68,22 +66,22 @@ spec:
       scrapeTimeout: 10s
   namespaceSelector:
     matchNames:
-      - rag-system
-
+      - ragaas
 ---
 # ServiceMonitor for Qdrant
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: qdrant-metrics
-  namespace: rag-system
+  namespace: monitoring
   labels:
-    app: qdrant
-    prometheus: rag-system
+    app.kubernetes.io/name: qdrant
+    app.kubernetes.io/part-of: ragaas-platform
+    release: prometheus
 spec:
   selector:
     matchLabels:
-      app: qdrant
+      app.kubernetes.io/name: qdrant
   endpoints:
     - port: http
       path: /metrics
@@ -91,4 +89,27 @@ spec:
       scrapeTimeout: 10s
   namespaceSelector:
     matchNames:
-      - rag-system
+      - ragaas
+---
+# ServiceMonitor for MinIO
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: minio-metrics
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: minio
+    app.kubernetes.io/part-of: ragaas-platform
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: minio
+  endpoints:
+    - port: api
+      path: /minio/v2/metrics/cluster
+      interval: 30s
+      scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+      - ragaas
