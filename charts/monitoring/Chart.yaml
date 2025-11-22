@@ -1,0 +1,23 @@
+apiVersion: v2
+name: monitoring
+description: Monitoring stack for RAGaaS platform (Prometheus, Grafana, AlertManager)
+type: application
+version: 1.0.0
+appVersion: "2.50.1"
+
+keywords:
+  - monitoring
+  - prometheus
+  - grafana
+  - alertmanager
+  - metrics
+
+maintainers:
+  - name: Platform Team
+    email: platform@cnaas.link
+
+dependencies: []
+
+annotations:
+  category: Monitoring
+  licenses: Apache-2.0
