@@ -1,40 +1,108 @@
-(# Default values for the rag-service chart
-# Customize image.tag and environment secrets per-environment in helmfile/values/
-
-image:
-	repository: yourorg/rag-service
-	tag: latest
+# Default values for rag-service
+# Override per-environment in helmfile/values/<env>/rag-service.yaml
 
 replicaCount: 2
 
-service:
-	type: ClusterIP
-	port: 8000
+image:
+  repository: ragaas/rag-service
+  tag: latest
+  pullPolicy: IfNotPresent
 
-env:
-	# Placeholders — override securely in helmfile/values/<env>/values.yaml
-	OPENAI_API_KEY: ""
-	QDRANT_URL: "http://qdrant:6333"
-	REDIS_URL: "redis://redis:6379"
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: "rag-service-sa"
+  annotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  port: 8000
+  annotations: {}
+
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+  hosts:
+    - host: rag.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
 
 resources:
-	requests:
-		cpu: 100m
-		memory: 128Mi
-	limits:
-		cpu: 500m
-		memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
 
-# Health / readiness probe configuration (used by templates)
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Environment variables
+env:
+  LOG_LEVEL: "INFO"
+  DEBUG: "false"
+
+# External service URLs (from ConfigMap)
+config:
+  qdrantUrl: "http://qdrant:6333"
+  redisUrl: "redis://redis:6379"
+  rabbitmqUrl: "amqp://rabbitmq:5672"
+  minioEndpoint: "minio:9000"
+
+# Secrets reference
+secrets:
+  openaiApiKeySecret: "ragaas-secrets"
+  openaiApiKeyKey: "OPENAI_API_KEY"
+
+# Probes
 probes:
-	liveness:
-		path: /health
-		initialDelaySeconds: 30
-		periodSeconds: 10
-	readiness:
-		path: /ready
-		initialDelaySeconds: 10
-		periodSeconds: 5
+  liveness:
+    enabled: true
+    path: /health
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readiness:
+    enabled: true
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
 
-# End of rag-service values
-
+# Prometheus metrics
+metrics:
+  enabled: true
+  port: 8000
+  path: /metrics
+  serviceMonitor:
+    enabled: true
+    interval: 30s

@@ -1,0 +1,23 @@
+apiVersion: v2
+name: rag-service
+description: RAG (Retrieval-Augmented Generation) service for the RAGaaS platform
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+keywords:
+  - rag
+  - retrieval-augmented-generation
+  - llm
+  - embeddings
+  - vector-search
+
+maintainers:
+  - name: Platform Team
+    email: platform@cnaas.link
+
+dependencies: []
+
+annotations:
+  category: Application
+  licenses: Apache-2.0
