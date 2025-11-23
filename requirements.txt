@@ -1,0 +1,10 @@
+# RAGaaS Scripts Dependencies
+# Install with: pip install -r requirements.txt
+
+# HTTP client for API calls (database scripts)
+requests>=2.31.0
+
+# For service requirements, see:
+# - src/rag-service/requirements.txt
+# - src/document-ingestor/requirements.txt
+# - src/rag-service/queue-worker/requirements.txt
