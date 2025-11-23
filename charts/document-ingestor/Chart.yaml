@@ -1,0 +1,22 @@
+apiVersion: v2
+name: document-ingestor
+description: Document ingestor worker for RAGaaS platform - processes document uploads and creates embeddings
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+keywords:
+  - document-processing
+  - embeddings
+  - ingestion
+  - worker
+
+maintainers:
+  - name: Platform Team
+    email: platform@cnaas.link
+
+dependencies: []
+
+annotations:
+  category: Application
+  licenses: Apache-2.0

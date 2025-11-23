@@ -1,22 +1,76 @@
-(# Minimal values for Qdrant chart
-# Tune image, persistence and resources for your environment.
-
-image:
-	repository: qdrant/qdrant
-	tag: "latest"
+# Default values for qdrant
+# Override per-environment in helmfile/values/<env>/qdrant.yaml
 
 replicaCount: 1
 
+image:
+  repository: qdrant/qdrant
+  tag: "v1.9.4"
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
 service:
-	type: ClusterIP
-	port: 6333
+  type: ClusterIP
+  httpPort: 6333
+  grpcPort: 6334
+  annotations: {}
 
 persistence:
-	enabled: true
-	size: 10Gi
-	storageClass: "" # set to storage class name, or leave empty to use default
+  enabled: true
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 10Gi
+  annotations: {}
 
-resources: {}
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 1000m
+    memory: 2Gi
 
-# End of qdrant values
+nodeSelector: {}
+tolerations: []
+affinity: {}
 
+# Qdrant configuration
+config:
+  # Storage configuration
+  storage:
+    storageDir: /qdrant/storage
+  # Service configuration
+  service:
+    httpPort: 6333
+    grpcPort: 6334
+  # Telemetry
+  telemetry:
+    disabled: false
+
+# Prometheus metrics
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s

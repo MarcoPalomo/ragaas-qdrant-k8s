@@ -1,0 +1,22 @@
+apiVersion: v2
+name: queue-worker
+description: Queue Worker for processing background tasks in the RAGaaS platform
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+keywords:
+  - queue
+  - worker
+  - rabbitmq
+  - background-tasks
+
+maintainers:
+  - name: Platform Team
+    email: platform@ragaas.io
+
+dependencies: []
+
+annotations:
+  category: Application
+  licenses: MIT

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "document-ingestor.fullname" . }}
+  namespace: {{ include "document-ingestor.namespace" . }}
+  labels:
+    {{- include "document-ingestor.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.metrics.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "document-ingestor.selectorLabels" . | nindent 4 }}

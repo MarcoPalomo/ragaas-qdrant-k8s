@@ -1,0 +1,55 @@
+RAGaaS - Retrieval Augmented Generation as a Service
+
+Introduction
+============
+
+RAGaaS is a production-ready RAG (Retrieval Augmented Generation) service
+deployed on Kubernetes. It provides a complete pipeline for document ingestion,
+vector storage, and AI-powered question answering.
+
+Key Features
+============
+
+1. Document Ingestion
+   - Support for PDF, DOCX, HTML, and TXT files
+   - Automatic text extraction and chunking
+   - Intelligent sentence boundary detection
+
+2. Vector Search
+   - High-performance similarity search using Qdrant
+   - Configurable embedding models
+   - Efficient indexing with HNSW algorithm
+
+3. AI-Powered Answers
+   - Integration with OpenAI GPT models
+   - Context-aware response generation
+   - Streaming response support
+
+4. Enterprise Features
+   - API key authentication
+   - Rate limiting
+   - Comprehensive monitoring with Prometheus and Grafana
+   - Redis caching for improved performance
+
+Architecture
+============
+
+The system consists of several microservices:
+
+- RAG Service: Main API handling queries and similarity search
+- Document Ingestor: Processes and embeds documents
+- Queue Worker: Background task processing
+- Qdrant: Vector database for similarity search
+- Redis: Caching layer
+- RabbitMQ: Message queue for async tasks
+- MinIO: Object storage for documents
+
+Getting Started
+===============
+
+1. Clone the repository
+2. Copy .env.example to .env and configure your API keys
+3. Run 'make dev' to start all services
+4. Access the API at http://localhost:8000/docs
+
+For more information, see the documentation at /docs.

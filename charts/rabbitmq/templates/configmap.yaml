@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rabbitmq.fullname" . }}-config
+  namespace: {{ include "rabbitmq.namespace" . }}
+  labels:
+    {{- include "rabbitmq.labels" . | nindent 4 }}
+data:
+  rabbitmq.conf: |
+    # RabbitMQ configuration
+    listeners.tcp.default = {{ .Values.service.amqpPort }}
+
+    # Management plugin
+    management.tcp.port = {{ .Values.service.managementPort }}
+    {{- if .Values.management.pathPrefix }}
+    management.path_prefix = {{ .Values.management.pathPrefix }}
+    {{- end }}
+
+    # Memory and disk limits
+    vm_memory_high_watermark.relative = {{ .Values.config.vmMemoryHighWatermark }}
+    disk_free_limit.absolute = {{ .Values.config.diskFreeLimit }}
+
+    # Logging
+    log.console = true
+    log.console.level = info
+
+    # Prometheus metrics
+    {{- if .Values.metrics.enabled }}
+    prometheus.tcp.port = 15692
+    {{- end }}
+
+  enabled_plugins: |
+    [{{ range $index, $plugin := .Values.plugins }}{{- if $index }},{{- end }}{{ $plugin }}{{ end }}].

@@ -1,6 +1,6 @@
 apiVersion: v2
 name: rabbitmq
-description: RabbitMQ message broker for async document ingestion in RAG service
+description: RabbitMQ message broker for async document ingestion in RAGaaS platform
 type: application
 version: 1.0.0
 appVersion: "3.13.0"

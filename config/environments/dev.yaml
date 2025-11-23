@@ -1,0 +1,25 @@
+app:
+  name: "ragaas-dev"
+  environment: "development"
+  debug: true
+
+database:
+  qdrant:
+    host: "qdrant-service.ragaas.svc.cluster.local"
+    port: 6333
+    collection: "documents_dev"
+
+llm:
+  provider: "openai"
+  model: "gpt-3.5-turbo"
+  temperature: 0.1
+  max_tokens: 1000
+
+embeddings:
+  model: "sentence-transformers/all-mpnet-base-v2"
+  chunk_size: 1000
+  chunk_overlap: 200
+
+logging:
+  level: "DEBUG"
+  format: "json"

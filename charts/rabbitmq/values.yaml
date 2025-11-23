@@ -1,22 +1,94 @@
-(# Minimal values for RabbitMQ chart
-# Use these defaults for simple development installs. For production, enable persistence and tune resources.
-
-image:
-	repository: rabbitmq
-	tag: "3.11-management"
+# Default values for rabbitmq
+# Override per-environment in helmfile/values/<env>/rabbitmq.yaml
 
 replicaCount: 1
 
+image:
+  repository: rabbitmq
+  tag: "3.13.0-management-alpine"
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 999
+  fsGroup: 999
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
 service:
-	type: ClusterIP
-	port: 5672
+  type: ClusterIP
+  amqpPort: 5672
+  managementPort: 15672
+  annotations: {}
 
 persistence:
-	enabled: false
-	size: 8Gi
-	storageClass: ""
+  enabled: true
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 8Gi
+  annotations: {}
 
-resources: {}
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
 
-# End of rabbitmq values
+nodeSelector: {}
+tolerations: []
+affinity: {}
 
+# RabbitMQ configuration
+config:
+  # Default user credentials
+  defaultUser: guest
+  defaultPass: guest
+  # Virtual host
+  defaultVhost: "/"
+  # Erlang cookie for clustering
+  erlangCookie: "SWQOKODSQALRPCLNMEQG"
+  # Memory high watermark
+  vmMemoryHighWatermark: 0.4
+  # Disk free limit
+  diskFreeLimit: 1073741824
+
+# Authentication
+auth:
+  enabled: false
+  existingSecret: ""
+  existingSecretPasswordKey: "rabbitmq-password"
+
+# Management plugin configuration
+management:
+  enabled: true
+  # Path prefix for management UI
+  pathPrefix: ""
+
+# Prometheus metrics
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+
+# Plugins to enable
+plugins:
+  - rabbitmq_management
+  - rabbitmq_prometheus

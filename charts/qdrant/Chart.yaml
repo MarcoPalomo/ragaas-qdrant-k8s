@@ -1,0 +1,22 @@
+apiVersion: v2
+name: qdrant
+description: Qdrant vector database for RAGaaS platform embeddings storage
+type: application
+version: 1.0.0
+appVersion: "1.9.4"
+
+keywords:
+  - qdrant
+  - vector-database
+  - embeddings
+  - similarity-search
+
+maintainers:
+  - name: Platform Team
+    email: platform@cnaas.link
+
+dependencies: []
+
+annotations:
+  category: Database
+  licenses: Apache-2.0

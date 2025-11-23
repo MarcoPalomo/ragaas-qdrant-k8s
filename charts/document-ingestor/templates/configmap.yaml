@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "document-ingestor.fullname" . }}-config
+  namespace: {{ include "document-ingestor.namespace" . }}
+  labels:
+    {{- include "document-ingestor.labels" . | nindent 4 }}
+data:
+  QDRANT_URL: {{ .Values.config.qdrantUrl | quote }}
+  REDIS_URL: {{ .Values.config.redisUrl | quote }}
+  RABBITMQ_URL: {{ .Values.config.rabbitmqUrl | quote }}
+  MINIO_ENDPOINT: {{ .Values.config.minioEndpoint | quote }}
+  INGEST_QUEUE: {{ .Values.config.ingestQueue | quote }}
+  DEAD_LETTER_QUEUE: {{ .Values.config.deadLetterQueue | quote }}

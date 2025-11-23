@@ -1,0 +1,35 @@
+# Example Python logging config (dictConfig compatible)
+version: 1
+disable_existing_loggers: False
+
+formatters:
+  json:
+    # Example: structured logging for ingestion into Loki/ELK
+    format: '{"timestamp":"%(asctime)s","level":"%(levelname)s","name":"%(name)s","message":%(message)s}'
+  default:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: default
+    level: INFO
+
+loggers:
+  uvicorn.error:
+    level: INFO
+    handlers: [console]
+    propagate: no
+  uvicorn.access:
+    level: INFO
+    handlers: [console]
+    propagate: no
+
+root:
+  level: INFO
+  handlers: [console]
+
+# Usage in Python:
+# import logging.config
+# from config.logging import logging_config
+# logging.config.dictConfig(logging_config)
