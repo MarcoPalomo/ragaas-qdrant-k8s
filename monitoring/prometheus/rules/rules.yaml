@@ -1,16 +1,70 @@
 groups:
-  - name: rag-metrics
+  - name: ragaas-recording-rules
     rules:
-      - alert: HighRequestLatency
-        expr: http_request_duration_seconds_bucket{job="rag-service"} > 1
-        for: 2m
-        labels:
-          severity: warning
-        annotations:
-          summary: "Temps de réponse élevé du RAG Service"
-          description: "Le service RAG dépasse 1s de latence sur les requêtes HTTP."
-
-      - record: job:http_request_rate5m
+      # HTTP Request Rates
+      - record: job:http_request_rate:5m
         expr: sum(rate(http_requests_total[5m])) by (job)
-      - record: job:http_error_rate5m
-        expr: sum(rate(http_errors_total[5m])) by (job)
+
+      - record: job:http_error_rate:5m
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) by (job)
+
+      - record: job:http_success_rate:5m
+        expr: |
+          sum(rate(http_requests_total{status=~"2.."}[5m])) by (job)
+          / sum(rate(http_requests_total[5m])) by (job)
+
+      # Latency percentiles
+      - record: job:http_latency_p50:5m
+        expr: histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[5m])) by (job, le))
+
+      - record: job:http_latency_p95:5m
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (job, le))
+
+      - record: job:http_latency_p99:5m
+        expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (job, le))
+
+  - name: slo-recording-rules
+    rules:
+      # RAG Service SLO - Availability (99.9%)
+      - record: ragaas:slo:availability:5m
+        expr: |
+          sum(rate(http_requests_total{job="rag-service", status!~"5.."}[5m]))
+          / sum(rate(http_requests_total{job="rag-service"}[5m]))
+
+      # RAG Service SLO - Latency (95% < 2s)
+      - record: ragaas:slo:latency_good:5m
+        expr: |
+          sum(rate(http_request_duration_seconds_bucket{job="rag-service", le="2"}[5m]))
+          / sum(rate(http_request_duration_seconds_count{job="rag-service"}[5m]))
+
+      # Error budget remaining (30-day window)
+      - record: ragaas:error_budget:remaining
+        expr: |
+          1 - (
+            (1 - avg_over_time(ragaas:slo:availability:5m[30d]))
+            / (1 - 0.999)
+          )
+
+  - name: capacity-recording-rules
+    rules:
+      # Total active queries
+      - record: ragaas:active_queries
+        expr: sum(rag_active_queries)
+
+      # Total vectors stored
+      - record: ragaas:vectors_total
+        expr: sum(qdrant_collection_points_count)
+
+      # Total documents processed (24h)
+      - record: ragaas:documents_processed_24h
+        expr: sum(increase(document_ingestion_total[24h]))
+
+      # Queue depth
+      - record: ragaas:queue_depth
+        expr: sum(rabbitmq_queue_messages_ready)
+
+      # Cache hit rate
+      - record: ragaas:cache_hit_rate
+        expr: |
+          sum(rate(redis_keyspace_hits_total[5m]))
+          / (sum(rate(redis_keyspace_hits_total[5m])) + sum(rate(redis_keyspace_misses_total[5m])))

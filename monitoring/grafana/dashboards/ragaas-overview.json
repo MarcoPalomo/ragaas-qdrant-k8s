@@ -1,0 +1,326 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "id": 1,
+      "title": "Overview",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "green", "value": 1}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 0, "y": 1},
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "title": "RAG Service Status",
+      "type": "stat",
+      "targets": [{"expr": "up{job=\"rag-service\"}", "legendFormat": ""}]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "green", "value": 1}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 4, "y": 1},
+      "id": 3,
+      "title": "Qdrant Status",
+      "type": "stat",
+      "targets": [{"expr": "up{job=\"qdrant\"}", "legendFormat": ""}]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "green", "value": 1}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 8, "y": 1},
+      "id": 4,
+      "title": "Redis Status",
+      "type": "stat",
+      "targets": [{"expr": "up{job=\"redis\"}", "legendFormat": ""}]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "green", "value": 1}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 12, "y": 1},
+      "id": 5,
+      "title": "RabbitMQ Status",
+      "type": "stat",
+      "targets": [{"expr": "rabbitmq_up", "legendFormat": ""}]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "unit": "short"
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 16, "y": 1},
+      "id": 6,
+      "title": "Total Vectors",
+      "type": "stat",
+      "targets": [{"expr": "sum(qdrant_collection_points_count)", "legendFormat": ""}]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "unit": "short"
+        }
+      },
+      "gridPos": {"h": 4, "w": 4, "x": 20, "y": 1},
+      "id": 7,
+      "title": "Queue Depth",
+      "type": "stat",
+      "targets": [{"expr": "sum(rabbitmq_queue_messages_ready)", "legendFormat": ""}]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 5},
+      "id": 10,
+      "title": "RAG Service Performance",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "unit": "reqps"
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 6},
+      "id": 11,
+      "title": "Request Rate",
+      "type": "timeseries",
+      "targets": [
+        {"expr": "sum(rate(http_requests_total{job=\"rag-service\"}[5m]))", "legendFormat": "Total"},
+        {"expr": "sum(rate(http_requests_total{job=\"rag-service\", status=~\"2..\"}[5m]))", "legendFormat": "Success"},
+        {"expr": "sum(rate(http_requests_total{job=\"rag-service\", status=~\"5..\"}[5m]))", "legendFormat": "Errors"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "unit": "s"
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 6},
+      "id": 12,
+      "title": "Query Latency",
+      "type": "timeseries",
+      "targets": [
+        {"expr": "histogram_quantile(0.50, sum(rate(rag_query_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p50"},
+        {"expr": "histogram_quantile(0.95, sum(rate(rag_query_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p95"},
+        {"expr": "histogram_quantile(0.99, sum(rate(rag_query_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p99"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 6},
+      "id": 13,
+      "title": "Cache Hit Rate",
+      "type": "timeseries",
+      "targets": [
+        {"expr": "sum(rate(rag_cache_hits_total[5m])) / (sum(rate(rag_cache_hits_total[5m])) + sum(rate(rag_cache_misses_total[5m])))", "legendFormat": "Hit Rate"}
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 14},
+      "id": 20,
+      "title": "Document Processing",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "unit": "short"
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 15},
+      "id": 21,
+      "title": "Documents Processed",
+      "type": "timeseries",
+      "targets": [
+        {"expr": "sum(rate(document_ingestion_total[5m])) * 60", "legendFormat": "Docs/min"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "unit": "s"
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 15},
+      "id": 22,
+      "title": "Processing Time",
+      "type": "timeseries",
+      "targets": [
+        {"expr": "histogram_quantile(0.50, sum(rate(document_processing_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p50"},
+        {"expr": "histogram_quantile(0.95, sum(rate(document_processing_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p95"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 15},
+      "id": 23,
+      "title": "Ingestion Success Rate",
+      "type": "timeseries",
+      "targets": [
+        {"expr": "1 - (sum(rate(document_ingestion_failures_total[5m])) / sum(rate(document_ingestion_total[5m])))", "legendFormat": "Success Rate"}
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 23},
+      "id": 30,
+      "title": "Infrastructure",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "unit": "bytes"
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+      "id": 31,
+      "title": "Memory Usage",
+      "type": "timeseries",
+      "targets": [
+        {"expr": "container_memory_usage_bytes{container=\"rag-service\"}", "legendFormat": "RAG Service"},
+        {"expr": "container_memory_usage_bytes{container=\"qdrant\"}", "legendFormat": "Qdrant"},
+        {"expr": "redis_memory_used_bytes", "legendFormat": "Redis"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+      "id": 32,
+      "title": "CPU Usage",
+      "type": "timeseries",
+      "targets": [
+        {"expr": "rate(container_cpu_usage_seconds_total{container=\"rag-service\"}[5m])", "legendFormat": "RAG Service"},
+        {"expr": "rate(container_cpu_usage_seconds_total{container=\"qdrant\"}[5m])", "legendFormat": "Qdrant"},
+        {"expr": "rate(container_cpu_usage_seconds_total{container=\"redis\"}[5m])", "legendFormat": "Redis"}
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["ragaas", "overview"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": false, "text": "Prometheus", "value": "prometheus"},
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {},
+  "timezone": "",
+  "title": "RAGaaS Overview",
+  "uid": "ragaas-overview",
+  "version": 1
+}

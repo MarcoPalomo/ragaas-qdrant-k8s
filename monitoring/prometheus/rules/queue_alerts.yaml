@@ -1,19 +1,111 @@
 groups:
   - name: rabbitmq-alerts
     rules:
+      - alert: RabbitMQDown
+        expr: rabbitmq_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: rabbitmq
+        annotations:
+          summary: "RabbitMQ node {{ $labels.instance }} is down"
+          description: "RabbitMQ node {{ $labels.instance }} has been down for more than 1 minute."
+
       - alert: RabbitMQQueueGrowing
-        expr: rabbitmq_queue_messages_ready{queue=~".+"} > 1000
+        expr: rabbitmq_queue_messages_ready > 1000
         for: 5m
         labels:
           severity: warning
+          service: rabbitmq
         annotations:
-          summary: "Backlog élevé dans RabbitMQ"
-          description: "Plus de 1000 messages en attente dans {{ $labels.queue }}"
-      - alert: RabbitMQNodeDown
-        expr: rabbitmq_up == 0
+          summary: "RabbitMQ queue backlog growing"
+          description: "Queue {{ $labels.queue }} has {{ $value }} messages waiting (threshold: 1000)."
+
+      - alert: RabbitMQQueueCritical
+        expr: rabbitmq_queue_messages_ready > 10000
+        for: 5m
+        labels:
+          severity: critical
+          service: rabbitmq
+        annotations:
+          summary: "RabbitMQ queue backlog critical"
+          description: "Queue {{ $labels.queue }} has {{ $value }} messages waiting (threshold: 10000)."
+
+      - alert: RabbitMQHighMemory
+        expr: |
+          rabbitmq_node_mem_used / rabbitmq_node_mem_limit > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: rabbitmq
+        annotations:
+          summary: "RabbitMQ high memory usage"
+          description: "RabbitMQ memory usage is at {{ $value | humanizePercentage }}."
+
+      - alert: RabbitMQNoConsumers
+        expr: |
+          rabbitmq_queue_consumers == 0 and rabbitmq_queue_messages_ready > 0
+        for: 10m
+        labels:
+          severity: warning
+          service: rabbitmq
+        annotations:
+          summary: "RabbitMQ queue has no consumers"
+          description: "Queue {{ $labels.queue }} has messages but no consumers."
+
+  - name: redis-alerts
+    rules:
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+        annotations:
+          summary: "Redis is down"
+          description: "Redis instance {{ $labels.instance }} has been down for more than 1 minute."
+
+      - alert: RedisHighMemory
+        expr: |
+          redis_memory_used_bytes / redis_memory_max_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis high memory usage"
+          description: "Redis memory usage is at {{ $value | humanizePercentage }}."
+
+      - alert: RedisKeyEviction
+        expr: rate(redis_evicted_keys_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis is evicting keys"
+          description: "Redis is evicting {{ $value }} keys per second due to memory pressure."
+
+  - name: queue-worker-alerts
+    rules:
+      - alert: QueueWorkerDown
+        expr: up{job="queue-worker"} == 0
         for: 2m
         labels:
           severity: critical
+          service: queue-worker
         annotations:
-          summary: "Nœud RabbitMQ {{ $labels.instance }} est down"
-          description: "Le nœud RabbitMQ {{ $labels.instance }} ne répond plus."
+          summary: "Queue Worker is down"
+          description: "Queue Worker {{ $labels.instance }} has been down for more than 2 minutes."
+
+      - alert: QueueWorkerHighErrorRate
+        expr: |
+          sum(rate(queue_task_failures_total[5m]))
+          / sum(rate(queue_tasks_total[5m])) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          service: queue-worker
+        annotations:
+          summary: "Queue Worker high error rate"
+          description: "Queue Worker failure rate is {{ $value | humanizePercentage }} (threshold: 10%)."

@@ -5,3 +5,20 @@ datasources:
     access: proxy
     url: http://prometheus-server.monitoring.svc.cluster.local:9090
     isDefault: true
+    jsonData:
+      timeInterval: "15s"
+      httpMethod: POST
+
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki.monitoring.svc.cluster.local:3100
+    jsonData:
+      maxLines: 1000
+
+  - name: Alertmanager
+    type: alertmanager
+    access: proxy
+    url: http://alertmanager.monitoring.svc.cluster.local:9093
+    jsonData:
+      implementation: prometheus

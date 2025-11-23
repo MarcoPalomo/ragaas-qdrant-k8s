@@ -1,0 +1,101 @@
+groups:
+  - name: rag-service-alerts
+    rules:
+      # API Availability
+      - alert: RAGServiceDown
+        expr: up{job="rag-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: rag-service
+        annotations:
+          summary: "RAG Service is down"
+          description: "RAG Service {{ $labels.instance }} has been down for more than 1 minute."
+          runbook_url: "https://docs.ragaas.example.com/runbooks/rag-service-down"
+
+      # High Error Rate
+      - alert: RAGServiceHighErrorRate
+        expr: |
+          sum(rate(http_requests_total{job="rag-service", status=~"5.."}[5m]))
+          / sum(rate(http_requests_total{job="rag-service"}[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: rag-service
+        annotations:
+          summary: "RAG Service high error rate"
+          description: "RAG Service error rate is {{ $value | humanizePercentage }} (threshold: 5%)."
+
+      # High Latency
+      - alert: RAGServiceHighLatency
+        expr: |
+          histogram_quantile(0.95, sum(rate(rag_query_duration_seconds_bucket{job="rag-service"}[5m])) by (le)) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: rag-service
+        annotations:
+          summary: "RAG Service high latency"
+          description: "95th percentile latency is {{ $value | humanizeDuration }} (threshold: 2s)."
+
+      # Vector Search Slow
+      - alert: RAGVectorSearchSlow
+        expr: |
+          histogram_quantile(0.95, sum(rate(rag_vector_search_duration_seconds_bucket{job="rag-service"}[5m])) by (le)) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          service: rag-service
+        annotations:
+          summary: "Vector search is slow"
+          description: "95th percentile vector search latency is {{ $value | humanizeDuration }} (threshold: 500ms)."
+
+      # High Memory Usage
+      - alert: RAGServiceHighMemory
+        expr: |
+          container_memory_usage_bytes{container="rag-service"}
+          / container_spec_memory_limit_bytes{container="rag-service"} > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          service: rag-service
+        annotations:
+          summary: "RAG Service high memory usage"
+          description: "RAG Service memory usage is at {{ $value | humanizePercentage }}."
+
+      # Low Cache Hit Rate
+      - alert: RAGLowCacheHitRate
+        expr: |
+          sum(rate(rag_cache_hits_total{job="rag-service"}[5m]))
+          / (sum(rate(rag_cache_hits_total{job="rag-service"}[5m])) + sum(rate(rag_cache_misses_total{job="rag-service"}[5m]))) < 0.5
+        for: 15m
+        labels:
+          severity: info
+          service: rag-service
+        annotations:
+          summary: "Low cache hit rate"
+          description: "Cache hit rate is {{ $value | humanizePercentage }} (threshold: 50%)."
+
+  - name: rag-service-recording-rules
+    rules:
+      # Request rate
+      - record: rag_service:request_rate:5m
+        expr: sum(rate(http_requests_total{job="rag-service"}[5m]))
+
+      # Error rate
+      - record: rag_service:error_rate:5m
+        expr: |
+          sum(rate(http_requests_total{job="rag-service", status=~"5.."}[5m]))
+          / sum(rate(http_requests_total{job="rag-service"}[5m]))
+
+      # P95 latency
+      - record: rag_service:latency_p95:5m
+        expr: histogram_quantile(0.95, sum(rate(rag_query_duration_seconds_bucket{job="rag-service"}[5m])) by (le))
+
+      # P99 latency
+      - record: rag_service:latency_p99:5m
+        expr: histogram_quantile(0.99, sum(rate(rag_query_duration_seconds_bucket{job="rag-service"}[5m])) by (le))
+
+      # Queries per second
+      - record: rag_service:queries_per_second:5m
+        expr: sum(rate(rag_queries_total{job="rag-service"}[5m]))

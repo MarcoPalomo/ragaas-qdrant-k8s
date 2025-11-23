@@ -1,0 +1,81 @@
+groups:
+  - name: document-ingestor-alerts
+    rules:
+      # Ingestor Down
+      - alert: DocumentIngestorDown
+        expr: up{job="document-ingestor"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: document-ingestor
+        annotations:
+          summary: "Document Ingestor is down"
+          description: "Document Ingestor {{ $labels.instance }} has been down for more than 2 minutes."
+
+      # High Processing Time
+      - alert: DocumentProcessingTooSlow
+        expr: |
+          histogram_quantile(0.95, sum(rate(document_processing_duration_seconds_bucket[5m])) by (le)) > 60
+        for: 10m
+        labels:
+          severity: warning
+          service: document-ingestor
+        annotations:
+          summary: "Document processing is too slow"
+          description: "95th percentile processing time is {{ $value | humanizeDuration }} (threshold: 60s)."
+
+      # High Failure Rate
+      - alert: DocumentIngestionHighFailureRate
+        expr: |
+          sum(rate(document_ingestion_failures_total[5m]))
+          / sum(rate(document_ingestion_total[5m])) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          service: document-ingestor
+        annotations:
+          summary: "High document ingestion failure rate"
+          description: "Document ingestion failure rate is {{ $value | humanizePercentage }} (threshold: 10%)."
+
+      # Embedding Generation Errors
+      - alert: EmbeddingGenerationErrors
+        expr: |
+          sum(rate(embedding_generation_errors_total[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: document-ingestor
+        annotations:
+          summary: "Embedding generation errors occurring"
+          description: "Embedding generation errors are occurring at {{ $value }} per second."
+
+      # Queue Backlog Growing
+      - alert: IngestorQueueBacklog
+        expr: document_queue_size > 100
+        for: 15m
+        labels:
+          severity: warning
+          service: document-ingestor
+        annotations:
+          summary: "Document ingestor queue backlog"
+          description: "Document queue has {{ $value }} pending items (threshold: 100)."
+
+  - name: document-ingestor-recording-rules
+    rules:
+      # Documents processed per minute
+      - record: document_ingestor:documents_per_minute:5m
+        expr: sum(rate(document_ingestion_total[5m])) * 60
+
+      # Processing success rate
+      - record: document_ingestor:success_rate:5m
+        expr: |
+          1 - (sum(rate(document_ingestion_failures_total[5m]))
+          / sum(rate(document_ingestion_total[5m])))
+
+      # P95 processing time
+      - record: document_ingestor:processing_time_p95:5m
+        expr: histogram_quantile(0.95, sum(rate(document_processing_duration_seconds_bucket[5m])) by (le))
+
+      # Total documents processed
+      - record: document_ingestor:total_processed
+        expr: sum(document_ingestion_total)
