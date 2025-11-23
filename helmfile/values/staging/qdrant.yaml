@@ -1,0 +1,22 @@
+# Qdrant configuration for staging
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+
+persistence:
+  enabled: true
+  size: 20Gi
+
+config:
+  log_level: INFO
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true

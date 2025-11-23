@@ -1,0 +1,32 @@
+# Production environment common values
+environment: production
+namespace: ragaas
+
+# Global settings
+global:
+  imageRegistry: ghcr.io
+  imagePullSecrets:
+    - name: regcred
+  storageClass: ""
+
+# Production-specific defaults
+defaults:
+  replicaCount: 3
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+
+# Logging
+logging:
+  level: INFO
+  format: json
+
+# Feature flags
+features:
+  metrics: true
+  tracing: true
+  profiling: false

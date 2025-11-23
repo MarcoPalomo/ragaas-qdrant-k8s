@@ -1,0 +1,31 @@
+# RabbitMQ configuration for production
+replicaCount: 3
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+
+persistence:
+  enabled: true
+  size: 20Gi
+
+auth:
+  username: ragaas
+  existingPasswordSecret: ragaas-secrets
+  existingPasswordSecretKey: RABBITMQ_PASSWORD
+
+clustering:
+  enabled: true
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2

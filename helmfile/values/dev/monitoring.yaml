@@ -1,0 +1,29 @@
+# Monitoring configuration for development
+prometheus:
+  enabled: true
+  retention: 7d
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  persistence:
+    enabled: true
+    size: 5Gi
+
+grafana:
+  enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  persistence:
+    enabled: false
+
+alertmanager:
+  enabled: false

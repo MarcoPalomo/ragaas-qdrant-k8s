@@ -1,0 +1,47 @@
+# Document Ingestor configuration for production
+replicaCount: 3
+
+image:
+  repository: ghcr.io/your-org/ragaas-k8s/document-ingestor
+  tag: ""  # Set via CI/CD
+  pullPolicy: IfNotPresent
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 60
+
+env:
+  LOG_LEVEL: INFO
+  QDRANT_URL: http://qdrant:6333
+  REDIS_URL: redis://:$(REDIS_PASSWORD)@redis:6379
+  RABBITMQ_URL: amqp://ragaas:$(RABBITMQ_PASSWORD)@rabbitmq:5672
+  MINIO_ENDPOINT: minio:9000
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: document-ingestor
+          topologyKey: kubernetes.io/hostname

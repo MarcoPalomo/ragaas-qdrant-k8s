@@ -1,0 +1,22 @@
+# Qdrant configuration for development
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 1Gi
+
+persistence:
+  enabled: true
+  size: 5Gi
+
+config:
+  log_level: DEBUG
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true

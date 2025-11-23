@@ -1,0 +1,122 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: ragaas
+
+build:
+  artifacts:
+    - image: ragaas/rag-service
+      context: src/rag-service
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "app/**/*.py"
+            dest: /app
+
+    - image: ragaas/document-ingestor
+      context: src/document-ingestor
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "app/**/*.py"
+            dest: /app
+
+    - image: ragaas/queue-worker
+      context: src/rag-service/queue-worker
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "app/**/*.py"
+            dest: /app
+
+  local:
+    push: false
+    useBuildkit: true
+
+profiles:
+  # Development profile - uses docker-compose
+  - name: dev
+    activation:
+      - command: dev
+    build:
+      local:
+        push: false
+    deploy:
+      docker:
+        useCompose: true
+        composePath: docker-compose.yml
+
+  # Local Kubernetes profile (minikube/kind)
+  - name: local
+    activation:
+      - kubeContext: minikube
+      - kubeContext: kind-.*
+    deploy:
+      kubectl:
+        hooks:
+          before:
+            - host:
+                command: ["sh", "-c", "kubectl apply -f k8s/base/namespace.yaml || true"]
+        manifests:
+          - k8s/base/*.yaml
+          - k8s/qdrant/*.yaml
+          - k8s/redis/*.yaml
+          - k8s/rabbitmq/*.yaml
+          - k8s/storage/*.yaml
+          - k8s/rag-service/*.yaml
+
+  # Production profile
+  - name: prod
+    deploy:
+      kubectl:
+        manifests:
+          - k8s/base/*.yaml
+          - k8s/qdrant/*.yaml
+          - k8s/redis/*.yaml
+          - k8s/rabbitmq/*.yaml
+          - k8s/storage/*.yaml
+          - k8s/rag-service/*.yaml
+          - k8s/ingress/*.yaml
+          - k8s/monitoring/*.yaml
+
+deploy:
+  kubectl:
+    hooks:
+      before:
+        - host:
+            command: ["sh", "-c", "kubectl apply -f k8s/base/namespace.yaml || true"]
+    manifests:
+      - k8s/base/*.yaml
+      - k8s/qdrant/*.yaml
+      - k8s/redis/*.yaml
+      - k8s/rag-service/*.yaml
+
+portForward:
+  - resourceType: service
+    resourceName: rag-service
+    namespace: ragaas
+    port: 8000
+    localPort: 8000
+  - resourceType: service
+    resourceName: qdrant
+    namespace: ragaas
+    port: 6333
+    localPort: 6333
+  - resourceType: service
+    resourceName: redis
+    namespace: ragaas
+    port: 6379
+    localPort: 6379
+  - resourceType: service
+    resourceName: rabbitmq
+    namespace: ragaas
+    port: 15672
+    localPort: 15672
+  - resourceType: service
+    resourceName: minio
+    namespace: ragaas
+    port: 9001
+    localPort: 9001

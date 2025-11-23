@@ -1,0 +1,31 @@
+# Development environment common values
+environment: dev
+namespace: ragaas
+
+# Global settings
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+# Development-specific defaults
+defaults:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# Logging
+logging:
+  level: DEBUG
+  format: json
+
+# Feature flags
+features:
+  metrics: true
+  tracing: false
+  profiling: true

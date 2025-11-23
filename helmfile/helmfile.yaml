@@ -36,7 +36,7 @@ environments:
 releases:
   # 1. Infrastructure Layer - Redis
   - name: redis
-    namespace: rag-system
+    namespace: ragaas
     chart: ../charts/redis
     version: 1.0.0
     values:
@@ -48,7 +48,7 @@ releases:
   
   # 2. Infrastructure Layer - RabbitMQ
   - name: rabbitmq
-    namespace: rag-system
+    namespace: ragaas
     chart: ../charts/rabbitmq
     version: 1.0.0
     values:
@@ -60,7 +60,7 @@ releases:
   
   # 3. Data Layer - Qdrant
   - name: qdrant
-    namespace: rag-system
+    namespace: ragaas
     chart: ../charts/qdrant
     version: 1.0.0
     values:
@@ -84,7 +84,7 @@ releases:
   
   # 5. Application Layer - RAG Service
   - name: rag-service
-    namespace: rag-system
+    namespace: ragaas
     chart: ../charts/rag-service
     version: 1.0.0
     values:
@@ -97,13 +97,28 @@ releases:
       - rabbitmq
       - qdrant
   
-  # 6. Worker Layer - Document Ingestor Worker
+  # 6. Worker Layer - Document Ingestor
   - name: document-ingestor
-    namespace: rag-system
+    namespace: ragaas
     chart: ../charts/document-ingestor
     version: 1.0.0
     values:
       - values/{{ .Environment.Name }}/document-ingestor.yaml
+    labels:
+      layer: application
+      component: worker
+    needs:
+      - redis
+      - rabbitmq
+      - qdrant
+
+  # 7. Worker Layer - Queue Worker
+  - name: queue-worker
+    namespace: ragaas
+    chart: ../charts/queue-worker
+    version: 1.0.0
+    values:
+      - values/{{ .Environment.Name }}/queue-worker.yaml
     labels:
       layer: application
       component: worker
@@ -134,7 +149,7 @@ hooks:
       - |
         echo "Deployment completed!"
         echo "Checking pods status..."
-        kubectl get pods -n rag-system
+        kubectl get pods -n ragaas
         echo ""
         echo "Services:"
-        kubectl get svc -n rag-system
+        kubectl get svc -n ragaas

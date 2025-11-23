@@ -1,0 +1,32 @@
+# Staging environment common values
+environment: staging
+namespace: ragaas
+
+# Global settings
+global:
+  imageRegistry: ghcr.io
+  imagePullSecrets:
+    - name: regcred
+  storageClass: ""
+
+# Staging-specific defaults
+defaults:
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+# Logging
+logging:
+  level: INFO
+  format: json
+
+# Feature flags
+features:
+  metrics: true
+  tracing: true
+  profiling: false

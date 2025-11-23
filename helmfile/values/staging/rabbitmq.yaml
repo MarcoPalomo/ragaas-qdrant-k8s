@@ -1,0 +1,24 @@
+# RabbitMQ configuration for staging
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+persistence:
+  enabled: true
+  size: 8Gi
+
+auth:
+  username: ragaas
+  existingPasswordSecret: ragaas-secrets
+  existingPasswordSecretKey: RABBITMQ_PASSWORD
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true

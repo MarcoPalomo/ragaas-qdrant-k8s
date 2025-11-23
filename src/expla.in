@@ -1,0 +1,50 @@
+Summary of Implemented Source Code
+1. RAG Service (src/rag-service/)
+
+Core Module (app/core/):
+config.py - Pydantic settings with environment variables for all services
+security.py - API key authentication and rate limiting
+
+Services (app/services/):
+llm_service.py - OpenAI integration for response generation with streaming support
+document_processor.py - Document chunking with sentence boundary detection
+cache_service.py - Redis caching for queries and embeddings
+queue_service.py - RabbitMQ task publishing
+vector_store.py - Qdrant vector storage (already existed)
+
+Utils (app/utils/):
+logger.py - Structured JSON logging
+metrics.py - Prometheus metrics for monitoring
+
+API (app/api/):
+models.py - Pydantic request/response models
+routes.py - FastAPI endpoints (/query, /ingest, /collections, etc.)
+
+Main Application:
+main.py - FastAPI app with lifespan management
+Dockerfile - Multi-stage Docker build
+requirements.txt - Updated dependencies
+
+2. Document Ingestor (src/document-ingestor/)
+file_parsers.py - Parsers for TXT, PDF, DOCX, HTML
+ingestor.py - Document processing and chunking
+queue_consumer.py - RabbitMQ consumer
+storage.py - MinIO object storage client
+main.py - Service entry point
+Dockerfile - Container build
+
+3. Queue Worker (src/rag-service/queue-worker/)
+tasks.py - Task handlers for background processing
+worker.py - RabbitMQ worker process
+Dockerfile - Container build
+
+4. Tests (src/rag-service/tests/)
+test_api.py - API endpoint tests
+test_services.py - Service unit tests
+conftest.py - Pytest fixtures
+Architecture Flow
+Client Request → RAG Service API → Vector Store (Qdrant)
+                      ↓                    ↓
+                 Cache (Redis)        LLM Service (OpenAI)
+                      ↓
+              Queue (RabbitMQ) → Document Ingestor → MinIO Storage

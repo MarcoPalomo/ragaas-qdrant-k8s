@@ -1,0 +1,28 @@
+# Redis configuration for staging
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+persistence:
+  enabled: true
+  size: 4Gi
+
+config:
+  maxmemory: "256mb"
+  maxmemoryPolicy: "allkeys-lru"
+
+auth:
+  enabled: true
+  existingSecret: ragaas-secrets
+  existingSecretPasswordKey: REDIS_PASSWORD
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
